@@ -1,0 +1,6 @@
+{
+  "name": "WaveReady - Singapore Marine & Water Sports Intelligence",
+  "description": "Live NEA tides, UV index, heat stress, and wind conditions for Singapore water sports lovers, yacht owners, and fishing charters.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
