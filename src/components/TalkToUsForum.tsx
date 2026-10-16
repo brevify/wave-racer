@@ -47,7 +47,7 @@ const FORUM_TOPICS: ForumTopic[] = [
 
 export const TalkToUsForum: React.FC = () => {
   const [selectedTopicId, setSelectedTopicId] = useState<string>('waveready-general-discussion');
-  const [activeMode, setActiveMode] = useState<'direct-form' | 'disqus-forum'>('direct-form');
+  const [activeMode, setActiveMode] = useState<'disqus-forum' | 'direct-form'>('disqus-forum');
 
   // Direct feedback form state
   const [feedbackName, setFeedbackName] = useState('');
@@ -84,11 +84,31 @@ export const TalkToUsForum: React.FC = () => {
       ? window.location.origin
       : 'https://waveready.vercel.app';
 
-  const disqusConfig = {
-    url: `${currentOrigin}/talk-to-us#${selectedTopic.id}`,
-    identifier: selectedTopic.id,
+  // Article metadata
+  const article = {
+    id: selectedTopic.id,
     title: selectedTopic.title,
+    url: `${currentOrigin}/talk-to-us#${selectedTopic.id}`,
+  };
+
+  // Disqus config with shortname waveready-1 and SSO structure
+  const disqusConfig = {
+    url: article.url,
+    identifier: article.id,
+    title: article.title,
     language: 'en',
+    remoteAuthS3: '',
+    apiKey: '',
+    sso: {
+      name: 'WaveReady Marine',
+      button: `${currentOrigin}/images/hero_water_sports.jpg`,
+      icon: `${currentOrigin}/favicon.ico`,
+      url: `${currentOrigin}/login/`,
+      logout: `${currentOrigin}/logout/`,
+      profile_url: `${currentOrigin}/profile/{username}`,
+      width: '800',
+      height: '400',
+    },
   };
 
   const handleDirectSubmit = async (e: React.FormEvent) => {
@@ -158,26 +178,16 @@ export const TalkToUsForum: React.FC = () => {
             Community & Support Channel
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-100 tracking-tight">
-            Talk to Us & Marine Community
+            Talk to Us & Marine Community Forum
           </h2>
           <p className="text-sm text-slate-400 mt-1 max-w-2xl">
-            Give immediate feedback on Singapore coastal conditions, suggest new beach sensors,
-            or join the public discussion on Disqus.
+            Join the conversation with fellow Singapore boaters, anglers, and water sports riders.
+            Powered by Disqus (<span className="text-cyan-400 font-mono">waveready-1</span>).
           </p>
         </div>
 
-        {/* View Mode Toggle: Direct Feedback vs Disqus */}
+        {/* View Mode Toggle: Disqus Forum vs Direct Feedback Form */}
         <div className="flex items-center p-1 bg-slate-900 rounded-xl border border-slate-800 self-start md:self-auto">
-          <button
-            onClick={() => setActiveMode('direct-form')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
-              activeMode === 'direct-form'
-                ? 'bg-cyan-500 text-slate-950 shadow-sm'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Direct Feedback Form
-          </button>
           <button
             onClick={() => setActiveMode('disqus-forum')}
             className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
@@ -188,15 +198,130 @@ export const TalkToUsForum: React.FC = () => {
           >
             <span>Disqus Forum</span>
             <span className="text-[10px] opacity-75 font-mono">
-              <CommentCount shortname="wav3" config={disqusConfig}>
+              <CommentCount shortname="waveready-1" config={disqusConfig}>
                 ·
               </CommentCount>
             </span>
           </button>
+          <button
+            onClick={() => setActiveMode('direct-form')}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+              activeMode === 'direct-form'
+                ? 'bg-cyan-500 text-slate-950 shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            Direct Feedback Form
+          </button>
         </div>
       </div>
 
-      {/* Mode 1: Instant Direct Feedback Form */}
+      {/* Mode 1: Disqus Public Forum (Default) */}
+      {activeMode === 'disqus-forum' && (
+        <div className="space-y-6">
+          {/* Quick Notice Banner with Direct Open button */}
+          <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 text-xs text-slate-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-2">
+              <span className="text-base text-cyan-400">🌊</span>
+              <div>
+                <span className="font-semibold text-white block">
+                  WaveReady Marine Forum (<span className="font-mono text-cyan-300">waveready-1</span>)
+                </span>
+                Post questions, tide updates, and catch reports below. You can also switch to the <strong>Direct Feedback Form</strong> tab to send messages without logging into Disqus.
+              </div>
+            </div>
+
+            <a
+              href="https://disqus.com/home/forums/waveready-1/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3.5 py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-cyan-300 rounded-lg border border-slate-700 transition-colors whitespace-nowrap self-start sm:self-auto"
+            >
+              Open on Disqus.com ↗
+            </a>
+          </div>
+
+          {/* Topics Selector Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {FORUM_TOPICS.map((topic) => {
+              const isSelected = topic.id === selectedTopic.id;
+              const topicArticle = {
+                url: `${currentOrigin}/talk-to-us#${topic.id}`,
+                identifier: topic.id,
+                title: topic.title,
+              };
+
+              return (
+                <button
+                  key={topic.id}
+                  onClick={() => setSelectedTopicId(topic.id)}
+                  className={`text-left p-4 rounded-2xl border transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-slate-900 border-cyan-500/60 shadow-lg shadow-cyan-950/30'
+                      : 'bg-slate-900/60 hover:bg-slate-900 border-slate-800'
+                  }`}
+                >
+                  <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1.5">
+                    <span className="text-cyan-400 font-semibold">{topic.category}</span>
+                    <span className="font-mono text-slate-400">
+                      <CommentCount shortname="waveready-1" config={topicArticle}>
+                        Comments
+                      </CommentCount>
+                    </span>
+                  </div>
+
+                  <h4 className="text-sm font-bold text-slate-100 line-clamp-2 mb-1.5">
+                    {topic.title}
+                  </h4>
+
+                  <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed mb-3">
+                    {topic.description}
+                  </p>
+
+                  <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono pt-2 border-t border-slate-800/80">
+                    <span>By {topic.author}</span>
+                    <span className={isSelected ? 'text-cyan-400 font-semibold' : ''}>
+                      {isSelected ? 'Active Thread ✓' : topic.timeAgo}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Disqus Embed Container */}
+          <div className="rounded-3xl bg-slate-900/90 border border-slate-800 p-6 sm:p-8 shadow-xl">
+            <div className="pb-4 mb-6 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div className="text-xs font-semibold text-cyan-400 font-mono mb-1">
+                  Topic: {selectedTopic.category}
+                </div>
+                <h3 className="text-lg sm:text-xl font-bold text-slate-100">
+                  {selectedTopic.title}
+                </h3>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-400 font-mono bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 shrink-0">
+                  Disqus: waveready-1
+                </span>
+                <span className="text-xs text-cyan-400 font-mono bg-cyan-950/60 px-3 py-1.5 rounded-lg border border-cyan-800/40 shrink-0">
+                  <CommentCount shortname="waveready-1" config={disqusConfig}>
+                    Comments
+                  </CommentCount>
+                </span>
+              </div>
+            </div>
+
+            {/* Embedded Disqus Forum */}
+            <div className="disqus-container min-h-[360px] bg-slate-950/60 p-4 sm:p-6 rounded-2xl border border-slate-800/80">
+              <DiscussionEmbed shortname="waveready-1" config={disqusConfig} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mode 2: Instant Direct Feedback Form */}
       {activeMode === 'direct-form' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Submission Form */}
@@ -369,103 +494,6 @@ export const TalkToUsForum: React.FC = () => {
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Mode 2: Disqus Public Forum */}
-      {activeMode === 'disqus-forum' && (
-        <div className="space-y-6">
-          {/* Troubleshooting Advice Banner for Disqus */}
-          <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 text-xs text-slate-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-start gap-2">
-              <span className="text-base text-cyan-400">ℹ️</span>
-              <div>
-                <span className="font-semibold text-white block">Trouble commenting on Disqus?</span>
-                If your browser blocks third-party cookies or an ad-blocker restricts the iframe,
-                switch to the <strong>Direct Feedback Form</strong> tab above, or open the discussion directly on Disqus.
-              </div>
-            </div>
-
-            <a
-              href="https://disqus.com/home/forums/wav3/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-3.5 py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-cyan-300 rounded-lg border border-slate-700 transition-colors whitespace-nowrap self-start sm:self-auto"
-            >
-              Open on Disqus.com ↗
-            </a>
-          </div>
-
-          {/* Topics Selector Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {FORUM_TOPICS.map((topic) => {
-              const isSelected = topic.id === selectedTopic.id;
-              const topicConfig = {
-                url: `${currentOrigin}/talk-to-us#${topic.id}`,
-                identifier: topic.id,
-                title: topic.title,
-              };
-
-              return (
-                <button
-                  key={topic.id}
-                  onClick={() => setSelectedTopicId(topic.id)}
-                  className={`text-left p-4 rounded-2xl border transition-all cursor-pointer ${
-                    isSelected
-                      ? 'bg-slate-900 border-cyan-500/60 shadow-lg shadow-cyan-950/30'
-                      : 'bg-slate-900/60 hover:bg-slate-900 border-slate-800'
-                  }`}
-                >
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1.5">
-                    <span className="text-cyan-400 font-semibold">{topic.category}</span>
-                    <span className="font-mono text-slate-500">
-                      <CommentCount shortname="wav3" config={topicConfig}>
-                        Comments
-                      </CommentCount>
-                    </span>
-                  </div>
-
-                  <h4 className="text-sm font-bold text-slate-100 line-clamp-2 mb-1.5">
-                    {topic.title}
-                  </h4>
-
-                  <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed mb-3">
-                    {topic.description}
-                  </p>
-
-                  <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono pt-2 border-t border-slate-800/80">
-                    <span>By {topic.author}</span>
-                    <span className={isSelected ? 'text-cyan-400 font-semibold' : ''}>
-                      {isSelected ? 'Active Thread ✓' : topic.timeAgo}
-                    </span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Disqus Embed Container */}
-          <div className="rounded-3xl bg-slate-900/90 border border-slate-800 p-6 sm:p-8 shadow-xl">
-            <div className="pb-4 mb-6 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <div className="text-xs font-semibold text-cyan-400 font-mono mb-1">
-                  Topic: {selectedTopic.category}
-                </div>
-                <h3 className="text-lg sm:text-xl font-bold text-slate-100">
-                  {selectedTopic.title}
-                </h3>
-              </div>
-
-              <div className="text-xs text-slate-400 font-mono bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 shrink-0 self-start sm:self-auto">
-                Disqus Forum: wav3
-              </div>
-            </div>
-
-            {/* Embedded Disqus Forum */}
-            <div className="disqus-container min-h-[360px] bg-slate-950/60 p-4 sm:p-6 rounded-2xl border border-slate-800/80">
-              <DiscussionEmbed shortname="wav3" config={disqusConfig} />
             </div>
           </div>
         </div>
