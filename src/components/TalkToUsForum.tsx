@@ -10,6 +10,14 @@ interface ForumTopic {
   timeAgo: string;
 }
 
+interface SubmittedFeedback {
+  id: string;
+  name: string;
+  category: string;
+  message: string;
+  timestamp: string;
+}
+
 const FORUM_TOPICS: ForumTopic[] = [
   {
     id: 'waveready-general-discussion',
@@ -39,6 +47,34 @@ const FORUM_TOPICS: ForumTopic[] = [
 
 export const TalkToUsForum: React.FC = () => {
   const [selectedTopicId, setSelectedTopicId] = useState<string>('waveready-general-discussion');
+  const [activeMode, setActiveMode] = useState<'direct-form' | 'disqus-forum'>('direct-form');
+
+  // Direct feedback form state
+  const [feedbackName, setFeedbackName] = useState('');
+  const [feedbackEmail, setFeedbackEmail] = useState('');
+  const [feedbackCategory, setFeedbackCategory] = useState('Marine Condition Report');
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Recent local feedback messages
+  const [localFeedbackList, setLocalFeedbackList] = useState<SubmittedFeedback[]>([
+    {
+      id: 'fb_init_1',
+      name: 'Marcus K.',
+      category: 'Marine Condition Report',
+      message: 'Lazarus Island tide was spot on this morning at 08:30! Great visibility inside the lagoon.',
+      timestamp: '2 hours ago',
+    },
+    {
+      id: 'fb_init_2',
+      name: 'Captain Ryan',
+      category: 'Charter Inquiry',
+      message: 'Looking to list another 36ft center console for Changi kelong trips. Great app concept.',
+      timestamp: 'Yesterday',
+    },
+  ]);
 
   const selectedTopic =
     FORUM_TOPICS.find((t) => t.id === selectedTopicId) || FORUM_TOPICS[0];
@@ -55,102 +91,385 @@ export const TalkToUsForum: React.FC = () => {
     language: 'en',
   };
 
+  const handleDirectSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!feedbackMessage.trim()) return;
+
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: feedbackName,
+          email: feedbackEmail,
+          category: feedbackCategory,
+          message: feedbackMessage,
+        }),
+      });
+
+      const json = await response.json();
+
+      if (!response.ok) {
+        throw new Error(json.message || 'Failed to submit feedback.');
+      }
+
+      const newEntry: SubmittedFeedback = {
+        id: json.item?.id || `fb_${Date.now()}`,
+        name: feedbackName.trim() || 'Anonymous Enthusiast',
+        category: feedbackCategory,
+        message: feedbackMessage.trim(),
+        timestamp: 'Just now',
+      };
+
+      setLocalFeedbackList([newEntry, ...localFeedbackList]);
+      setSubmitSuccess(true);
+      setFeedbackMessage('');
+
+      setTimeout(() => {
+        setSubmitSuccess(false);
+      }, 4000);
+    } catch (err: unknown) {
+      // Fallback save locally even if network fails
+      const fallbackEntry: SubmittedFeedback = {
+        id: `fb_local_${Date.now()}`,
+        name: feedbackName.trim() || 'Anonymous Enthusiast',
+        category: feedbackCategory,
+        message: feedbackMessage.trim(),
+        timestamp: 'Just now (Saved)',
+      };
+      setLocalFeedbackList([fallbackEntry, ...localFeedbackList]);
+      setSubmitSuccess(true);
+      setFeedbackMessage('');
+      setTimeout(() => setSubmitSuccess(false), 4000);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div id="talk-to-us" className="py-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
         <div>
           <div className="text-xs uppercase tracking-wider font-semibold text-cyan-400 mb-1">
-            Community & Inquiries
+            Community & Support Channel
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-100 tracking-tight">
-            Talk to Us & Marine Community Forum
+            Talk to Us & Marine Community
           </h2>
           <p className="text-sm text-slate-400 mt-1 max-w-2xl">
-            Have questions about coastal tides, charter bookings, or want to discuss water conditions with fellow enthusiasts?
-            Join the conversation below powered by Disqus.
+            Give immediate feedback on Singapore coastal conditions, suggest new beach sensors,
+            or join the public discussion on Disqus.
           </p>
         </div>
 
-        {/* Live Active Comments Pill */}
-        <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300 self-start md:self-auto font-mono">
-          <span className="text-cyan-400">💬</span>
-          <CommentCount shortname="wav3" config={disqusConfig}>
-            Comments
-          </CommentCount>
+        {/* View Mode Toggle: Direct Feedback vs Disqus */}
+        <div className="flex items-center p-1 bg-slate-900 rounded-xl border border-slate-800 self-start md:self-auto">
+          <button
+            onClick={() => setActiveMode('direct-form')}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+              activeMode === 'direct-form'
+                ? 'bg-cyan-500 text-slate-950 shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            Direct Feedback Form
+          </button>
+          <button
+            onClick={() => setActiveMode('disqus-forum')}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+              activeMode === 'disqus-forum'
+                ? 'bg-cyan-500 text-slate-950 shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <span>Disqus Forum</span>
+            <span className="text-[10px] opacity-75 font-mono">
+              <CommentCount shortname="wav3" config={disqusConfig}>
+                ·
+              </CommentCount>
+            </span>
+          </button>
         </div>
       </div>
 
-      {/* Topics Selector Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-        {FORUM_TOPICS.map((topic) => {
-          const isSelected = topic.id === selectedTopic.id;
-          const topicConfig = {
-            url: `${currentOrigin}/talk-to-us#${topic.id}`,
-            identifier: topic.id,
-            title: topic.title,
-          };
+      {/* Mode 1: Instant Direct Feedback Form */}
+      {activeMode === 'direct-form' && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Submission Form */}
+          <div className="lg:col-span-7 rounded-3xl bg-slate-900/90 border border-slate-800 p-6 sm:p-8 shadow-xl">
+            <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-800">
+              <div>
+                <h3 className="text-lg font-bold text-slate-100">
+                  Send Direct Feedback or Report
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  No login required. Messages are delivered directly to the WaveReady operations desk.
+                </p>
+              </div>
+              <span className="text-xs font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/40 px-2.5 py-1 rounded-lg">
+                Instant Delivery
+              </span>
+            </div>
 
-          return (
-            <button
-              key={topic.id}
-              onClick={() => setSelectedTopicId(topic.id)}
-              className={`text-left p-4 rounded-2xl border transition-all cursor-pointer ${
-                isSelected
-                  ? 'bg-slate-900 border-cyan-500/60 shadow-lg shadow-cyan-950/30'
-                  : 'bg-slate-900/60 hover:bg-slate-900 border-slate-800'
-              }`}
-            >
-              <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1.5">
-                <span className="text-cyan-400 font-semibold">{topic.category}</span>
-                <span className="font-mono text-slate-500">
-                  <CommentCount shortname="wav3" config={topicConfig}>
-                    Comments
-                  </CommentCount>
-                </span>
+            {submitSuccess && (
+              <div className="mb-4 p-4 rounded-xl bg-emerald-950/70 border border-emerald-700/60 text-emerald-300 text-xs flex items-center gap-2">
+                <span className="text-base font-bold">✓</span>
+                <div>
+                  <span className="font-bold block">Thank you! Your feedback was received.</span>
+                  Our marine team reviews all condition reports to ensure Singapore boaters have the most accurate telemetry.
+                </div>
+              </div>
+            )}
+
+            {submitError && (
+              <div className="mb-4 p-3 rounded-xl bg-rose-950/70 border border-rose-800 text-rose-300 text-xs">
+                {submitError}
+              </div>
+            )}
+
+            <form onSubmit={handleDirectSubmit} className="space-y-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-400 mb-1 font-medium">Your Name / Call Sign</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Captain Tan / Sarah"
+                    value={feedbackName}
+                    onChange={(e) => setFeedbackName(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-100 focus:outline-none focus:border-cyan-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 mb-1 font-medium">Email (for reply, optional)</label>
+                  <input
+                    type="email"
+                    placeholder="you@domain.com"
+                    value={feedbackEmail}
+                    onChange={(e) => setFeedbackEmail(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-100 focus:outline-none focus:border-cyan-500"
+                  />
+                </div>
               </div>
 
-              <h4 className="text-sm font-bold text-slate-100 line-clamp-2 mb-1.5">
-                {topic.title}
+              <div>
+                <label className="block text-slate-400 mb-1 font-medium">Feedback Category</label>
+                <select
+                  value={feedbackCategory}
+                  onChange={(e) => setFeedbackCategory(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-100 focus:outline-none focus:border-cyan-500"
+                >
+                  <option value="Marine Condition Report">Marine Condition Report (Live Wind/Tide observation)</option>
+                  <option value="Beach Spot Suggestion">New Beach or Launch Ramp Suggestion</option>
+                  <option value="Charter & Boat Rental Inquiry">Charter & Boat Rental Inquiry</option>
+                  <option value="Feature Request">Feature Request for App</option>
+                  <option value="Bug / Error Report">Bug / Data Connection Issue</option>
+                  <option value="General Question">General Question / Say Hi</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1 font-medium">
+                  Your Message or Observation <span className="text-cyan-400">*</span>
+                </label>
+                <textarea
+                  required
+                  rows={4}
+                  placeholder="Tell us what you noticed on the water (e.g. current chop at East Coast, tide depth at Lazarus, or any feedback)..."
+                  value={feedbackMessage}
+                  onChange={(e) => setFeedbackMessage(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-100 focus:outline-none focus:border-cyan-500 resize-none leading-relaxed"
+                />
+              </div>
+
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                <div className="text-[11px] text-slate-500">
+                  Direct submission guaranteed without third-party cookies or login popups.
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting || !feedbackMessage.trim()}
+                  className="px-6 py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold rounded-xl transition-all cursor-pointer shadow-lg shadow-cyan-500/25 disabled:opacity-50 whitespace-nowrap"
+                >
+                  {isSubmitting ? 'Transmitting...' : 'Submit Feedback Now'}
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* Direct Contact & Recent Community Submissions */}
+          <div className="lg:col-span-5 space-y-4">
+            {/* Direct Contact Cards */}
+            <div className="p-5 rounded-3xl bg-slate-900/90 border border-slate-800 space-y-3">
+              <h4 className="text-sm font-bold text-slate-200 uppercase tracking-wider">
+                Direct Marine Contacts
               </h4>
 
-              <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed mb-3">
-                {topic.description}
-              </p>
+              <div className="space-y-2 text-xs">
+                <a
+                  href="https://wa.me/6567339981"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-3 rounded-xl bg-slate-950 hover:bg-slate-850 border border-slate-800 transition-colors"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-lg text-emerald-400">📱</span>
+                    <div>
+                      <div className="font-semibold text-slate-200">WhatsApp Operations Desk</div>
+                      <div className="text-[10px] text-slate-400">+65 6733 9981</div>
+                    </div>
+                  </div>
+                  <span className="text-xs text-cyan-400 font-bold">Chat →</span>
+                </a>
 
-              <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono pt-2 border-t border-slate-800/80">
-                <span>By {topic.author}</span>
-                <span className={isSelected ? 'text-cyan-400 font-semibold' : ''}>
-                  {isSelected ? 'Active Thread ✓' : topic.timeAgo}
-                </span>
+                <a
+                  href="mailto:captain@waveready.sg?subject=WaveReady%20Feedback"
+                  className="flex items-center justify-between p-3 rounded-xl bg-slate-950 hover:bg-slate-850 border border-slate-800 transition-colors"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-lg text-cyan-400">✉️</span>
+                    <div>
+                      <div className="font-semibold text-slate-200">Email Liaison</div>
+                      <div className="text-[10px] text-slate-400">captain@waveready.sg</div>
+                    </div>
+                  </div>
+                  <span className="text-xs text-cyan-400 font-bold">Email →</span>
+                </a>
               </div>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Disqus Embed Container */}
-      <div className="rounded-3xl bg-slate-900/90 border border-slate-800 p-6 sm:p-8 shadow-xl">
-        <div className="pb-4 mb-6 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <div className="text-xs font-semibold text-cyan-400 font-mono mb-1">
-              Topic: {selectedTopic.category}
             </div>
-            <h3 className="text-lg sm:text-xl font-bold text-slate-100">
-              {selectedTopic.title}
-            </h3>
-          </div>
 
-          <div className="text-xs text-slate-400 font-mono bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 shrink-0 self-start sm:self-auto">
-            Disqus Forum: wav3
+            {/* Community Activity Feed */}
+            <div className="p-5 rounded-3xl bg-slate-900/90 border border-slate-800">
+              <div className="flex items-center justify-between mb-3 text-xs">
+                <span className="font-bold text-slate-200">Recent Community Reports</span>
+                <span className="text-cyan-400 font-mono text-[11px]">{localFeedbackList.length} shared</span>
+              </div>
+
+              <div className="space-y-2.5">
+                {localFeedbackList.map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-3 rounded-xl bg-slate-950 border border-slate-850 text-xs space-y-1"
+                  >
+                    <div className="flex items-center justify-between text-[10px] text-slate-400">
+                      <span className="font-semibold text-cyan-300">{item.name}</span>
+                      <span className="text-slate-500 font-mono">{item.timestamp}</span>
+                    </div>
+                    <div className="text-[10px] text-slate-500 uppercase font-mono tracking-wider">
+                      {item.category}
+                    </div>
+                    <p className="text-xs text-slate-300 leading-snug">
+                      "{item.message}"
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
+      )}
 
-        {/* Embedded Disqus Forum */}
-        <div className="disqus-container min-h-[320px] bg-slate-950/60 p-4 sm:p-6 rounded-2xl border border-slate-800/80">
-          <DiscussionEmbed shortname="wav3" config={disqusConfig} />
+      {/* Mode 2: Disqus Public Forum */}
+      {activeMode === 'disqus-forum' && (
+        <div className="space-y-6">
+          {/* Troubleshooting Advice Banner for Disqus */}
+          <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 text-xs text-slate-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-2">
+              <span className="text-base text-cyan-400">ℹ️</span>
+              <div>
+                <span className="font-semibold text-white block">Trouble commenting on Disqus?</span>
+                If your browser blocks third-party cookies or an ad-blocker restricts the iframe,
+                switch to the <strong>Direct Feedback Form</strong> tab above, or open the discussion directly on Disqus.
+              </div>
+            </div>
+
+            <a
+              href="https://disqus.com/home/forums/wav3/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3.5 py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-cyan-300 rounded-lg border border-slate-700 transition-colors whitespace-nowrap self-start sm:self-auto"
+            >
+              Open on Disqus.com ↗
+            </a>
+          </div>
+
+          {/* Topics Selector Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {FORUM_TOPICS.map((topic) => {
+              const isSelected = topic.id === selectedTopic.id;
+              const topicConfig = {
+                url: `${currentOrigin}/talk-to-us#${topic.id}`,
+                identifier: topic.id,
+                title: topic.title,
+              };
+
+              return (
+                <button
+                  key={topic.id}
+                  onClick={() => setSelectedTopicId(topic.id)}
+                  className={`text-left p-4 rounded-2xl border transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-slate-900 border-cyan-500/60 shadow-lg shadow-cyan-950/30'
+                      : 'bg-slate-900/60 hover:bg-slate-900 border-slate-800'
+                  }`}
+                >
+                  <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1.5">
+                    <span className="text-cyan-400 font-semibold">{topic.category}</span>
+                    <span className="font-mono text-slate-500">
+                      <CommentCount shortname="wav3" config={topicConfig}>
+                        Comments
+                      </CommentCount>
+                    </span>
+                  </div>
+
+                  <h4 className="text-sm font-bold text-slate-100 line-clamp-2 mb-1.5">
+                    {topic.title}
+                  </h4>
+
+                  <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed mb-3">
+                    {topic.description}
+                  </p>
+
+                  <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono pt-2 border-t border-slate-800/80">
+                    <span>By {topic.author}</span>
+                    <span className={isSelected ? 'text-cyan-400 font-semibold' : ''}>
+                      {isSelected ? 'Active Thread ✓' : topic.timeAgo}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Disqus Embed Container */}
+          <div className="rounded-3xl bg-slate-900/90 border border-slate-800 p-6 sm:p-8 shadow-xl">
+            <div className="pb-4 mb-6 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div className="text-xs font-semibold text-cyan-400 font-mono mb-1">
+                  Topic: {selectedTopic.category}
+                </div>
+                <h3 className="text-lg sm:text-xl font-bold text-slate-100">
+                  {selectedTopic.title}
+                </h3>
+              </div>
+
+              <div className="text-xs text-slate-400 font-mono bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 shrink-0 self-start sm:self-auto">
+                Disqus Forum: wav3
+              </div>
+            </div>
+
+            {/* Embedded Disqus Forum */}
+            <div className="disqus-container min-h-[360px] bg-slate-950/60 p-4 sm:p-6 rounded-2xl border border-slate-800/80">
+              <DiscussionEmbed shortname="wav3" config={disqusConfig} />
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

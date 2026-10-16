@@ -9,6 +9,7 @@
     { "source": "/api/heat-stress", "destination": "/api/heat-stress" },
     { "source": "/api/wind-direction", "destination": "/api/wind-direction" },
     { "source": "/api/wind-speed", "destination": "/api/wind-speed" },
+    { "source": "/api/feedback", "destination": "/api/feedback" },
     { "source": "/api/NEA", "destination": "/api/NEA" }
   ]
 }

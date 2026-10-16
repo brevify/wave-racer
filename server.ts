@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import neaHandler, { fetchNEAData } from './api/NEA.ts';
 import healthHandler from './api/health.ts';
+import feedbackHandler from './api/feedback.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,6 +20,7 @@ app.get('/api/uv', (req, res) => fetchNEAData('uv', req, res));
 app.get('/api/heat-stress', (req, res) => fetchNEAData('heat-stress', req, res));
 app.get('/api/wind-speed', (req, res) => fetchNEAData('wind-speed', req, res));
 app.get('/api/wind-direction', (req, res) => fetchNEAData('wind-direction', req, res));
+app.all('/api/feedback', (req, res) => feedbackHandler(req, res));
 app.all('/api/NEA', (req, res) => neaHandler(req, res));
 
 async function startServer() {
