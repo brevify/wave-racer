@@ -23,6 +23,7 @@ import { DataDiagnosticsModal } from './components/DataDiagnosticsModal';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { MobileBottomNav } from './components/MobileBottomNav';
+import { TalkToUsForum } from './components/TalkToUsForum';
 
 export default function App() {
   const [dataBundle, setDataBundle] = useState<LiveConditionsBundle | null>(null);
@@ -38,7 +39,7 @@ export default function App() {
   const [isSubscribed, setIsSubscribed] = useState<boolean>(false);
 
   // Mobile navigation tab
-  const [mobileTab, setMobileTab] = useState<'map' | 'beaches' | 'tides' | 'partners'>('map');
+  const [mobileTab, setMobileTab] = useState<'map' | 'beaches' | 'tides' | 'partners' | 'talk'>('map');
 
   // Geolocation
   const [userLocation, setUserLocation] = useState<{ lat: number; lon: number } | null>(null);
@@ -202,12 +203,13 @@ export default function App() {
     }
   };
 
-  const handleMobileTab = (tab: 'map' | 'beaches' | 'tides' | 'partners') => {
+  const handleMobileTab = (tab: 'map' | 'beaches' | 'tides' | 'partners' | 'talk') => {
     setMobileTab(tab);
     if (tab === 'map') scrollToSection('map-section');
     else if (tab === 'beaches') scrollToSection('beaches-list');
     else if (tab === 'tides') scrollToSection('tides-section');
     else if (tab === 'partners') scrollToSection('partners');
+    else if (tab === 'talk') scrollToSection('talk-to-us');
   };
 
   return (
@@ -637,6 +639,9 @@ export default function App() {
           selectedBeachId={selectedBeachId}
           onSelectBeach={(id) => setSelectedBeachId(id)}
         />
+
+        {/* Talk to Us Tab & Disqus Forum */}
+        <TalkToUsForum />
       </main>
 
       {/* Sub-goal 6: Footer with mandatory attribution */}

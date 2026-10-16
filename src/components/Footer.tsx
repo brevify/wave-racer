@@ -41,6 +41,13 @@ export const Footer: React.FC<FooterProps> = ({
               Charter Peace-of-Mind Guarantee
             </button>
             <span className="text-slate-700">·</span>
+            <a
+              href="#talk-to-us"
+              className="text-slate-400 hover:text-cyan-300 transition-colors cursor-pointer"
+            >
+              Talk to Us Forum
+            </a>
+            <span className="text-slate-700">·</span>
             <span className="text-slate-500 font-mono">
               Last Telemetry Sync: {lastUpdated || 'Live'}
             </span>

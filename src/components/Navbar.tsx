@@ -54,6 +54,12 @@ export const Navbar: React.FC<NavbarProps> = ({
             Boat & Gear Partners
           </button>
           <button
+            onClick={() => onScrollToSection('talk-to-us')}
+            className="hover:text-cyan-300 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+          >
+            Talk to Us
+          </button>
+          <button
             onClick={onOpenDiagnostics}
             className={`transition-colors whitespace-nowrap shrink-0 cursor-pointer flex items-center gap-1.5 ${
               hasErrorsOrSlow

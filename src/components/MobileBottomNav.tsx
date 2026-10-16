@@ -1,8 +1,8 @@
 import React from 'react';
 
 interface MobileBottomNavProps {
-  activeTab: 'map' | 'beaches' | 'tides' | 'partners';
-  onTabChange: (tab: 'map' | 'beaches' | 'tides' | 'partners') => void;
+  activeTab: 'map' | 'beaches' | 'tides' | 'partners' | 'talk';
+  onTabChange: (tab: 'map' | 'beaches' | 'tides' | 'partners' | 'talk') => void;
   onOpenSubscription: () => void;
 }
 
@@ -13,7 +13,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
 }) => {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-md border-t border-slate-800/90 md:hidden px-2 py-1">
-      <div className="grid grid-cols-4 items-center h-14">
+      <div className="grid grid-cols-5 items-center h-14">
         {/* Tab 1: Map */}
         <button
           onClick={() => onTabChange('map')}
@@ -65,6 +65,19 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <span className="text-[10px] font-medium tracking-tight mt-0.5">Partners</span>
+        </button>
+
+        {/* Tab 5: Talk to Us */}
+        <button
+          onClick={() => onTabChange('talk')}
+          className={`flex flex-col items-center justify-center min-h-[44px] min-w-[44px] transition-colors cursor-pointer ${
+            activeTab === 'talk' ? 'text-cyan-400' : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+          <span className="text-[10px] font-medium tracking-tight mt-0.5">Talk</span>
         </button>
       </div>
     </div>
