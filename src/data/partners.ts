@@ -1,5 +1,9 @@
 import { PartnerVendor } from '../types';
 
+import heroWaterSportsImg from '../assets/images/hero_water_sports_1792134701450.jpg';
+import partnerBoatCharterImg from '../assets/images/partner_boat_charter_1792134716815.jpg';
+import partnerWaterEquipmentImg from '../assets/images/partner_water_equipment_1792134731356.jpg';
+
 export const PARTNER_VENDORS: PartnerVendor[] = [
   {
     id: 'equinox-charters',
@@ -11,7 +15,7 @@ export const PARTNER_VENDORS: PartnerVendor[] = [
     description: 'Custom 48ft offshore sportfisher equipped with high-resolution Garmin chirp sonar, live bait tanks, Penn International heavy tackle, and certified IGFA skipper.',
     amenities: ['Skipper & Deckhand Included', 'Live Bait Tank', 'Premium Rods & Tackle', 'Ice & Cold Storage', 'Marine Life Jackets'],
     contactNumber: '+65 6733 9981',
-    imageUrl: '/src/assets/images/hero_water_sports_1792134701450.jpg',
+    imageUrl: heroWaterSportsImg || '/images/hero_water_sports.jpg',
     verifiedPartner: true,
     royaltyContributionRate: '8% per confirmed charter',
   },
@@ -25,7 +29,7 @@ export const PARTNER_VENDORS: PartnerVendor[] = [
     description: 'Lagoon 400 sailing catamaran with spacious shaded cockpit, sunbeds, air-conditioned saloon, stand-up paddleboards, and tender boat included.',
     amenities: ['Licensed Marine Captain', 'Fuel Included', 'Complimentary 2x Kayaks', 'Surround Sound Audio', 'BYO Food & Beverages'],
     contactNumber: '+65 6270 8820',
-    imageUrl: '/src/assets/images/partner_boat_charter_1792134716815.jpg',
+    imageUrl: partnerBoatCharterImg || '/images/partner_boat_charter.jpg',
     verifiedPartner: true,
     royaltyContributionRate: '7% royalty to platform',
   },
@@ -39,7 +43,7 @@ export const PARTNER_VENDORS: PartnerVendor[] = [
     description: 'Singapore’s benchmark center for windsurfing, wingfoiling, laser sailing dinghies, and carbon fiber stand-up paddleboard rentals.',
     amenities: ['Carbon SUP & Wingfoils', 'Locker & Hot Shower', 'Safety Chase Boat on Standby', 'Rescue Equipment', 'Beginner & Pro Rigs'],
     contactNumber: '+65 6245 0288',
-    imageUrl: '/src/assets/images/partner_water_equipment_1792134731356.jpg',
+    imageUrl: partnerWaterEquipmentImg || '/images/partner_water_equipment.jpg',
     verifiedPartner: true,
     royaltyContributionRate: '10% on gear reservations',
   },
@@ -53,7 +57,7 @@ export const PARTNER_VENDORS: PartnerVendor[] = [
     description: 'Guided Yamaha WaveRunner coastal safari tours around St John’s and Lazarus islands, plus Fliteboard e-Foil lessons with certified instructors.',
     amenities: ['Yamaha High-Output Craft', 'Guide Boat Escort', 'Neoprene Vests & Comms', 'GoPro Footage Available'],
     contactNumber: '+65 6279 1155',
-    imageUrl: '/src/assets/images/partner_boat_charter_1792134716815.jpg',
+    imageUrl: partnerBoatCharterImg || '/images/partner_boat_charter.jpg',
     verifiedPartner: true,
     royaltyContributionRate: '9% partner royalty',
   },
@@ -67,7 +71,7 @@ export const PARTNER_VENDORS: PartnerVendor[] = [
     description: 'Fast twin-engine center console skiffs targeting barramundi, mangrove jack, and grouper near offshore kelongs and rocky reefs.',
     amenities: ['Local Tide Expert Guide', 'Cast Net Bait', 'Bait & Lure Setups', 'Cooler Box with Slush Ice'],
     contactNumber: '+65 6545 2876',
-    imageUrl: '/src/assets/images/hero_water_sports_1792134701450.jpg',
+    imageUrl: heroWaterSportsImg || '/images/hero_water_sports.jpg',
     verifiedPartner: true,
     royaltyContributionRate: '8% per booking',
   },
@@ -81,7 +85,7 @@ export const PARTNER_VENDORS: PartnerVendor[] = [
     description: 'High-stability sit-on-top sea kayaks, pedal kayaks, Hobie catamarans, and coastal safety trackers available for public hire.',
     amenities: ['Double & Single Kayaks', 'PFD Standard Vests', 'Dry Bags & Paddles', 'Beach Launch Ramp'],
     contactNumber: '+65 6445 5108',
-    imageUrl: '/src/assets/images/partner_water_equipment_1792134731356.jpg',
+    imageUrl: partnerWaterEquipmentImg || '/images/partner_water_equipment.jpg',
     verifiedPartner: true,
     royaltyContributionRate: '10% on gear reservations',
   },

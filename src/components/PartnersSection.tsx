@@ -134,15 +134,20 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({
             className="group rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-cyan-500/50 transition-all duration-300 overflow-hidden flex flex-col shadow-lg"
           >
             {/* Image Container with Fallback */}
-            <div className="relative h-48 w-full overflow-hidden bg-slate-950">
+            <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-slate-900 via-slate-950 to-cyan-950/40 flex items-center justify-center">
               <img
                 src={partner.imageUrl}
                 alt={partner.name}
+                loading="lazy"
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 onError={(e) => {
-                  // Fallback container
-                  (e.target as HTMLElement).style.display = 'none';
+                  const target = e.currentTarget;
+                  if (!target.src.includes('/images/')) {
+                    target.src = '/images/hero_water_sports.jpg';
+                  } else {
+                    target.style.display = 'none';
+                  }
                 }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent pointer-events-none" />
